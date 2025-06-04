@@ -931,7 +931,7 @@ public class CarRace extends JFrame implements KeyListener, ActionListener {
 
         backGraphics.setColor(Color.WHITE);
         backGraphics.setFont(new Font("Arial", Font.BOLD, 18));
-        backGraphics.drawString("🚫 DILARANG MELEWATI MARKA MERAH! 🚫", 420, 845);
+        backGraphics.drawString("🚫 DILARANG MELEWATI MARKA MERAH shdlkdalda! 🚫", 420, 845);
 
         backGraphics.setColor(Color.YELLOW);
         backGraphics.setFont(new Font("Arial", Font.PLAIN, 14));
