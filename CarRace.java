@@ -230,18 +230,17 @@ public class CarRace extends JFrame implements KeyListener, ActionListener {
         }
 
         private double getRandomXPosition() {
-            // PERBAIKAN: Obstacle harus menghormati marka jalan juga
-            final int LEFT_BOUNDARY = 30;
-            final int RIGHT_BOUNDARY = 1200;
-            final int CENTER_DIVIDER_LEFT = 645;
-            final int CENTER_DIVIDER_RIGHT = 655;
+            final int LEFT_BOUNDARY = 35;
+            final int RIGHT_BOUNDARY = 1265;
+            final int CENTER_DIVIDER_LEFT = 640;
+            final int CENTER_DIVIDER_RIGHT = 660;
             final int CAR_WIDTH = 70;
 
             if (random.nextBoolean()) {
-                // Jalur kiri (Player 1 area)
+                // Left area (Player 1)
                 return LEFT_BOUNDARY + random.nextInt(CENTER_DIVIDER_LEFT - LEFT_BOUNDARY - CAR_WIDTH);
             } else {
-                // Jalur kanan (Player 2 area)
+                // Right area (Player 2)
                 return CENTER_DIVIDER_RIGHT + random.nextInt(RIGHT_BOUNDARY - CENTER_DIVIDER_RIGHT - CAR_WIDTH);
             }
         }
@@ -383,42 +382,67 @@ public class CarRace extends JFrame implements KeyListener, ActionListener {
         roadImage = new BufferedImage(1300, 900, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = roadImage.createGraphics();
 
-        // Create a nice looking road with clear boundaries
-        g2d.setColor(new Color(105, 105, 105)); // Road color
+        // Road base
+        g2d.setColor(new Color(105, 105, 105));
         g2d.fillRect(0, 0, 1300, 900);
 
-        // Enhanced center divider (RED)
+        // === COMPREHENSIVE RED BOUNDARY SYSTEM ===
+
+        // 1. Main center divider (Thickest)
         g2d.setColor(Color.RED);
         g2d.fillRect(645, 0, 10, 900);
 
-        // Warning stripes on center divider
-        g2d.setColor(Color.WHITE);
-        for (int i = 0; i < 900; i += 40) {
-            g2d.fillRect(647, i, 6, 20);
+        // 2. Left road boundary
+        g2d.setColor(Color.RED);
+        g2d.fillRect(25, 0, 8, 900);
+
+        // 3. Right road boundary
+        g2d.setColor(Color.RED);
+        g2d.fillRect(1267, 0, 8, 900);
+
+        // 4. Inner lane separators (Player 1 side)
+        g2d.setColor(new Color(200, 0, 0)); // Darker red for lane dividers
+        for (int x = 200; x < 645; x += 150) {
+            for (int i = 0; i < 900; i += 80) {
+                g2d.fillRect(x, i, 4, 40);
+            }
         }
 
-        // Side boundaries (YELLOW)
-        g2d.setColor(Color.YELLOW);
-        g2d.fillRect(25, 0, 5, 900); // Left boundary
-        g2d.fillRect(1270, 0, 5, 900); // Right boundary
-
-        // Lane markings
-        g2d.setColor(Color.WHITE);
-        for (int i = 0; i < 900; i += 100) {
-            // Left side lanes (Player 1 area)
-            for (int x = 150; x < 645; x += 150) {
-                g2d.fillRect(x, i, 8, 50);
+        // 5. Inner lane separators (Player 2 side)
+        for (int x = 800; x < 1270; x += 150) {
+            for (int i = 0; i < 900; i += 80) {
+                g2d.fillRect(x, i, 4, 40);
             }
-            // Right side lanes (Player 2 area)
-            for (int x = 800; x < 1270; x += 150) {
-                g2d.fillRect(x, i, 8, 50);
+        }
+
+        // White warning stripes on main boundaries
+        g2d.setColor(Color.WHITE);
+        for (int i = 0; i < 900; i += 60) {
+            // Center divider
+            g2d.fillRect(647, i, 6, 30);
+            // Left boundary
+            g2d.fillRect(27, i, 4, 30);
+            // Right boundary
+            g2d.fillRect(1269, i, 4, 30);
+        }
+
+        // Additional white lane markings
+        g2d.setColor(Color.WHITE);
+        for (int i = 0; i < 900; i += 120) {
+            // Player 1 area main lanes
+            for (int x = 125; x < 645; x += 200) {
+                g2d.fillRect(x, i, 6, 60);
+            }
+            // Player 2 area main lanes
+            for (int x = 750; x < 1270; x += 200) {
+                g2d.fillRect(x, i, 6, 60);
             }
         }
 
         // Grass/sidewalk areas
-        g2d.setColor(new Color(34, 139, 34)); // Green
-        g2d.fillRect(0, 0, 30, 900); // Left grass
-        g2d.fillRect(1275, 0, 25, 900); // Right grass
+        g2d.setColor(new Color(34, 139, 34));
+        g2d.fillRect(0, 0, 30, 900);
+        g2d.fillRect(1275, 0, 25, 900);
 
         g2d.dispose();
     }
@@ -491,25 +515,23 @@ public class CarRace extends JFrame implements KeyListener, ActionListener {
 
         int moveSpeed = 8;
 
-        // BATASAN JALAN - Konstanta untuk boundary
-        final int LEFT_BOUNDARY = 30; // Batas kiri jalan
-        final int RIGHT_BOUNDARY = 1200; // Batas kanan jalan
-        final int CENTER_DIVIDER_LEFT = 645; // Marka merah kiri
-        final int CENTER_DIVIDER_RIGHT = 655; // Marka merah kanan
-        final int CAR_WIDTH = 70; // Lebar mobil
+        // === ENHANCED BOUNDARY CONSTANTS ===
+        final int LEFT_BOUNDARY = 35; // After red marker
+        final int RIGHT_BOUNDARY = 1265; // Before red marker
+        final int CENTER_DIVIDER_LEFT = 640; // Before center red marker
+        final int CENTER_DIVIDER_RIGHT = 660; // After center red marker
+        final int CAR_WIDTH = 70;
 
-        // Player 1 (WASD) - HANYA BOLEH DI JALUR KIRI
+        // Player 1 (WASD) - LEFT LANE ONLY
         if (player1.alive) {
             if (keysPressed.contains(KeyEvent.VK_A)) {
                 int newX = player1.x - moveSpeed;
-                // Tidak boleh keluar batas kiri jalan
                 if (newX >= LEFT_BOUNDARY) {
                     player1.x = newX;
                 }
             }
             if (keysPressed.contains(KeyEvent.VK_D)) {
                 int newX = player1.x + moveSpeed;
-                // Tidak boleh melewati marka merah tengah
                 if (newX + CAR_WIDTH <= CENTER_DIVIDER_LEFT) {
                     player1.x = newX;
                 }
@@ -522,18 +544,16 @@ public class CarRace extends JFrame implements KeyListener, ActionListener {
             }
         }
 
-        // Player 2 (Arrow Keys) - HANYA BOLEH DI JALUR KANAN
+        // Player 2 (Arrow Keys) - RIGHT LANE ONLY
         if (player2.alive) {
             if (keysPressed.contains(KeyEvent.VK_LEFT)) {
                 int newX = player2.x - moveSpeed;
-                // Tidak boleh melewati marka merah tengah
                 if (newX >= CENTER_DIVIDER_RIGHT) {
                     player2.x = newX;
                 }
             }
             if (keysPressed.contains(KeyEvent.VK_RIGHT)) {
                 int newX = player2.x + moveSpeed;
-                // Tidak boleh keluar batas kanan jalan
                 if (newX + CAR_WIDTH <= RIGHT_BOUNDARY) {
                     player2.x = newX;
                 }
@@ -761,35 +781,105 @@ public class CarRace extends JFrame implements KeyListener, ActionListener {
             // Draw second copy for seamless scrolling
             backGraphics.drawImage(roadImage, 0, roadOffset - roadImage.getHeight(), null);
 
-            // HIGHLIGHT CENTER DIVIDER - Make it more visible
-            backGraphics.setColor(new Color(255, 0, 0, 200)); // Semi-transparent red
+            // === ENHANCED BOUNDARY MARKERS ===
+
+            // 1. CENTER DIVIDER - Main Red Marker (Animated)
+            backGraphics.setColor(new Color(255, 0, 0, 220));
             backGraphics.fillRect(645, 0, 10, 900);
 
-            // Add warning stripes on center divider
+            // Animated warning stripes on center divider
             backGraphics.setColor(Color.WHITE);
-            for (int i = 0; i < 900; i += 40) {
-                backGraphics.fillRect(647, i, 6, 20);
+            int stripeOffset = (gameState == GameState.PLAYING) ? (roadOffset / 3) % 80 : 0;
+            for (int i = stripeOffset - 80; i < 900; i += 80) {
+                if (i >= 0) {
+                    backGraphics.fillRect(647, i, 6, 40);
+                }
+            }
+
+            // 2. LEFT BOUNDARY - Red & White Stripes
+            backGraphics.setColor(Color.RED);
+            backGraphics.fillRect(25, 0, 8, 900);
+            backGraphics.setColor(Color.WHITE);
+            for (int i = stripeOffset - 60; i < 900; i += 60) {
+                if (i >= 0) {
+                    backGraphics.fillRect(27, i, 4, 30);
+                }
+            }
+
+            // 3. RIGHT BOUNDARY - Red & White Stripes
+            backGraphics.setColor(Color.RED);
+            backGraphics.fillRect(1267, 0, 8, 900);
+            backGraphics.setColor(Color.WHITE);
+            for (int i = stripeOffset - 60; i < 900; i += 60) {
+                if (i >= 0) {
+                    backGraphics.fillRect(1269, i, 4, 30);
+                }
+            }
+
+            // 4. LANE DIVIDERS - Dashed Red Lines (Player 1 Area)
+            backGraphics.setColor(new Color(255, 100, 100, 180));
+            for (int laneX = 200; laneX < 645; laneX += 150) {
+                for (int i = stripeOffset - 100; i < 900; i += 100) {
+                    if (i >= 0) {
+                        backGraphics.fillRect(laneX, i, 4, 50);
+                    }
+                }
+            }
+
+            // 5. LANE DIVIDERS - Dashed Red Lines (Player 2 Area)
+            for (int laneX = 800; laneX < 1270; laneX += 150) {
+                for (int i = stripeOffset - 100; i < 900; i += 100) {
+                    if (i >= 0) {
+                        backGraphics.fillRect(laneX, i, 4, 50);
+                    }
+                }
             }
 
         } else {
-            // Fallback road with enhanced center divider
+            // === FALLBACK ROAD WITH ENHANCED RED MARKERS ===
             backGraphics.setColor(new Color(105, 105, 105));
             backGraphics.fillRect(0, 0, 1300, 900);
 
-            // Enhanced center divider
+            // Main center divider
             backGraphics.setColor(Color.RED);
             backGraphics.fillRect(645, 0, 10, 900);
 
-            // Warning stripes
+            // Left boundary marker
+            backGraphics.setColor(Color.RED);
+            backGraphics.fillRect(25, 0, 8, 900);
+
+            // Right boundary marker
+            backGraphics.setColor(Color.RED);
+            backGraphics.fillRect(1267, 0, 8, 900);
+
+            // Warning stripes on all markers
             backGraphics.setColor(Color.WHITE);
             for (int i = 0; i < 900; i += 40) {
+                // Center divider stripes
                 backGraphics.fillRect(647, i, 6, 20);
+                // Left boundary stripes
+                backGraphics.fillRect(27, i, 4, 20);
+                // Right boundary stripes
+                backGraphics.fillRect(1269, i, 4, 20);
             }
 
-            // Side boundaries
-            backGraphics.setColor(Color.YELLOW);
-            backGraphics.fillRect(25, 0, 5, 900); // Left boundary
-            backGraphics.fillRect(1270, 0, 5, 900); // Right boundary
+            // Lane markings with red tint
+            backGraphics.setColor(new Color(255, 150, 150));
+            for (int i = 0; i < 900; i += 100) {
+                // Left side lanes
+                for (int x = 200; x < 645; x += 150) {
+                    backGraphics.fillRect(x, i, 4, 50);
+                }
+                // Right side lanes
+                for (int x = 800; x < 1270; x += 150) {
+                    backGraphics.fillRect(x, i, 4, 50);
+                }
+            }
+
+            // Grass areas
+            backGraphics.setColor(new Color(34, 139, 34));
+            backGraphics.fillRect(0, 0, 30, 900);
+            backGraphics.fillRect(1275, 0, 25, 900);
         }
     }
 
@@ -925,17 +1015,23 @@ public class CarRace extends JFrame implements KeyListener, ActionListener {
         drawPlayerStatus(player1, 50, 20);
         drawPlayerStatus(player2, 950, 20);
 
-        // BOUNDARY RULES REMINDER
-        backGraphics.setColor(new Color(0, 0, 0, 120));
-        backGraphics.fillRoundRect(400, 820, 500, 60, 15, 15);
+        // === ENHANCED BOUNDARY WARNING ===
+        backGraphics.setColor(new Color(0, 0, 0, 140));
+        backGraphics.fillRoundRect(350, 810, 600, 80, 15, 15);
+
+        // Main warning
+        backGraphics.setColor(Color.RED);
+        backGraphics.setFont(new Font("Arial", Font.BOLD, 20));
+        backGraphics.drawString("🚫 DILARANG MELEWATI SEMUA MARKA MERAH! 🚫", 370, 835);
+
+        // Instructions
+        backGraphics.setColor(Color.YELLOW);
+        backGraphics.setFont(new Font("Arial", Font.PLAIN, 16));
+        backGraphics.drawString("Player 1: Jalur Kiri Saja | Player 2: Jalur Kanan Saja", 420, 855);
 
         backGraphics.setColor(Color.WHITE);
-        backGraphics.setFont(new Font("Arial", Font.BOLD, 18));
-        backGraphics.drawString("🚫 DILARANG MELEWATI MARKA MERAH shdlkdalda! 🚫", 420, 845);
-
-        backGraphics.setColor(Color.YELLOW);
         backGraphics.setFont(new Font("Arial", Font.PLAIN, 14));
-        backGraphics.drawString("Player 1: Jalur Kiri | Player 2: Jalur Kanan", 450, 865);
+        backGraphics.drawString("Tetap di area yang ditentukan untuk menghindari tabrakan!", 430, 875);
     }
 
     private void drawPlayerStatus(Player player, int x, int y) {
